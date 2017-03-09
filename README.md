@@ -18,19 +18,23 @@
 
         Windows: .\flask\Scripts\activate
 
-6- Create DataBase: 
+6- Install project requirements:
+
+        pip install -r requirements.txt
+
+7- Create DataBase: 
     
         python db_create.py
 
-7- Add Tags to DB: 
+8- Add Tags to DB: 
     
         python db_add_tags.py
 
-8- Run server on dev mode: 
+9- Run server on dev mode: 
 
         python run.py
 
-9- Run server on prod mode: 
+10- Run server on prod mode: 
 
         python runp.py
 
