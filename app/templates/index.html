@@ -1,0 +1,34 @@
+<!-- extend base layout -->
+{% extends "base.html" %} {% block content %}
+<div class="well" id="container">
+    <h3>Connexion</h3>
+    <form class="form" action="" method="post" name="login">
+        {{ form.hidden_tag() }}
+        <div class="control-group{% if form.username.errors %} error{% endif %}">
+            <div class="controls">
+                Nom d'utilisateur {{ form.username(size=80, class="span4") }} {% for error in form.username.errors %}
+                <span class="help-inline" style="color:#c7254e">{{ error }}</span><br> {% endfor %}
+            </div>
+        </div>
+        <div class="control-group{% if form.password.errors %} error{% endif %}">
+            <div class="controls">
+                Mot de passe {{ form.password(size=80, class="span4") }} {% for error in form.password.errors %}
+                <span class="help-inline" style="color:#c7254e">{{ error }}</span><br> {% endfor %}
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <label class="checkbox" for="remember_me">
+                    {{ form.remember_me }} Se sourvenir de moi
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <input class="btn btn-primary" type="submit" value="Se Connecter">
+            </div>
+        </div>
+    </form>
+    {% include 'flash.html' %}
+</div>
+{% endblock %}

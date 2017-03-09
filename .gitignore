@@ -1,0 +1,9 @@
+*.db
+*.pyc
+*.sqlite
+db_repository
+flask
+tmp
+whoosh_index
+.idea
+uploads
