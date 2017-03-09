@@ -9,7 +9,6 @@ from jwt import DecodeError, ExpiredSignature
 from datetime import datetime, timedelta
 from functools import wraps
 from werkzeug.datastructures import MultiDict
-from haversine import haversine
 
 # JWT AUTh process start
 def create_token(user, days=1):
