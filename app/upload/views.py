@@ -17,9 +17,10 @@ def allowed_file(filename):
 @app.route('/api/upload', methods=['POST'])
 @login_required
 def upload():
+    print request.get_data()
     file = request.files.get("file")
-    data = request.get_json(force=True)
-    post_id = data.get('post_id')
+    post_id = request.args.get('post_id')
+    print post_id
     if post_id:
         post = Post.query.get(post_id)
         if post.user_id is not g.user.id:
@@ -71,7 +72,7 @@ def upload_profile_image():
         filename = secure_filename(file.filename)
         directory = os.path.join(basedir, UPLOAD_FOLDER, g.user.username, 'profile')
         if os.path.exists(directory):
-            old_picture = ProfilePicture.query.get(g.user.profile_image_id)
+            old_picture = g.user.profile_image_id
             file_path = os.path.join(directory, old_picture.name)
             db.session.delete(old_picture)
             db.session.commit()
@@ -84,7 +85,8 @@ def upload_profile_image():
         uploaded_image = ProfilePicture(name=filename,user=g.user)
         db.session.add(uploaded_image)
         db.session.commit()
-    return jsonify({'element':g.user.to_json()})
+        return jsonify({'element':g.user.to_json()})
+    abort(400)
 
 
 @app.route('/api/uploads/profile/<string:username>/<string:filename>')
