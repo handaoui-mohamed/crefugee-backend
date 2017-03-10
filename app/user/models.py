@@ -3,7 +3,7 @@ from app import db, app
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired)
 from app.tag.models import Tag
-from app.upload.models import ProfilePicture
+from app.upload.models import ProfilePicture,LegalDocument
 from config import SECRET_KEY
 
 
@@ -27,7 +27,11 @@ class User(db.Model):
     validated = db.Column(db.Boolean, default=False)
     admin = db.Column(db.Boolean, default=False)
     tags = db.relationship('Tag', secondary=UserTag, backref='user')
-    profile_image = db.relationship('ProfilePicture', backref='user', lazy='dynamic')
+    posts = db.relationship('Post', backref='user', lazy='dynamic')
+    files = db.relationship('PostUpload', backref='user', lazy='dynamic')
+    profile_image = db.relationship("ProfilePicture", uselist=False, backref="user")
+    legal_document = db.relationship("LegalDocument", uselist=False, backref="user")
+    sent_messages = db.relationship('Message', backref='sender', lazy='dynamic')
 
     def hash_password(self, password):
         self.password_hash = pwd_context.encrypt(password)
@@ -54,6 +58,7 @@ class User(db.Model):
     def to_json(self):
         return {
             'id': self.id,
+            'validated': self.validated,
             'username': self.username,
             'full_name': self.full_name,
             'address': self.address,
@@ -61,8 +66,38 @@ class User(db.Model):
             'phone_number': self.phone_number,
             'description': self.description,
             'tags': [element.to_json() for element in self.tags],
-            'profile_image':  [element.to_json(self.username) for element in self.profile_image.all()]
+            'profile_image':  profile_image.to_json()
         }
+
+    # for administration
+    def to_json_doc(self):
+        return {
+            'id': self.id,
+            'validated': self.validated,
+            'username': self.username,
+            'full_name': self.full_name,
+            'address': self.address,
+            'email': self.email,
+            'phone_number': self.phone_number,
+            'description': self.description,
+            'tags': [element.to_json() for element in self.tags.all()],
+            'legal_document':  legal_document.to_json()
+        }
+
+    def to_json_post(self):
+        return {
+            'id': self.id,
+            'validated': self.validated,
+            'username': self.username,
+            'full_name': self.full_name,
+            'address': self.address,
+            'email': self.email,
+            'phone_number': self.phone_number,
+            'description': self.description,
+            'tags': [element.to_json() for element in self.tags.all()],
+            'posts': [element.to_json() for element in self.posts.all()],
+        }
+
 
     def add_tags(self, tags):
         self.tags = []

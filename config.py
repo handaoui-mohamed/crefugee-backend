@@ -17,3 +17,4 @@ CORS_HEADERS = 'Content-Type'
 SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
 YEAR = 365
 DAY = 24
+NUM_PAGES = 10

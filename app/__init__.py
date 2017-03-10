@@ -22,8 +22,11 @@ from app.tag import views
 from app.upload import views
 from app.contact import views
 from app.moderator import views
+from app.post import views
 
 # import models
 from app.user.models import User
 from app.tag.models import Tag
-from app.upload.models import Upload, ProfilePicture
+from app.upload.models import PostUpload, ProfilePicture, LegalDocument
+from app.post.models import Post
+from app.message.models import Message
