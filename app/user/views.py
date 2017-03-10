@@ -58,9 +58,10 @@ def new_user():
     if form.validate():
         username = data.get('username')
         password = data.get('password')
+        helper = data.get('is_helper', False)
         email = data.get('email')
         remember_me = data.get('remember_me', False)
-        user = User(username=username.lower(), email=email.lower())
+        user = User(username=username.lower(), email=email.lower(), helper=helper)
         user.hash_password(password)
         db.session.add(user)
         db.session.commit()
@@ -129,8 +130,8 @@ def profile():
 
             if data.get('tags') is not None: user.add_tags(tags)
 
-            user.full_name=full_name.lower()
-            user.address=address.lower()
+            if full_name:user.full_name=full_name.lower()
+            if address: user.address=address.lower()
             user.email=email.lower()
             user.phone_number=phone_number
             user.description=description

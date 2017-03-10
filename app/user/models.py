@@ -26,6 +26,7 @@ class User(db.Model):
     description = db.Column(db.Text)
     validated = db.Column(db.Boolean, default=False)
     admin = db.Column(db.Boolean, default=False)
+    helper = db.Column(db.Boolean, default=False)
     tags = db.relationship('Tag', secondary=UserTag, backref='user')
     posts = db.relationship('Post', backref='user', lazy='dynamic')
     files = db.relationship('PostUpload', backref='user', lazy='dynamic')
@@ -59,6 +60,7 @@ class User(db.Model):
         return {
             'id': self.id,
             'validated': self.validated,
+            'is_helper': self.helper,
             'username': self.username,
             'full_name': self.full_name,
             'address': self.address,
@@ -66,7 +68,7 @@ class User(db.Model):
             'phone_number': self.phone_number,
             'description': self.description,
             'tags': [element.to_json() for element in self.tags],
-            'profile_image':  profile_image.to_json()
+            'profile_image':  self.profile_image.to_json() if self.profile_image else None
         }
 
     # for administration
@@ -74,6 +76,7 @@ class User(db.Model):
         return {
             'id': self.id,
             'validated': self.validated,
+            'is_helper': self.helper,
             'username': self.username,
             'full_name': self.full_name,
             'address': self.address,
@@ -81,13 +84,14 @@ class User(db.Model):
             'phone_number': self.phone_number,
             'description': self.description,
             'tags': [element.to_json() for element in self.tags.all()],
-            'legal_document':  legal_document.to_json()
+            'legal_document':  self.legal_document.to_json() if self.legal_document else None
         }
 
     def to_json_post(self):
         return {
             'id': self.id,
             'validated': self.validated,
+            'is_helper': self.helper,
             'username': self.username,
             'full_name': self.full_name,
             'address': self.address,

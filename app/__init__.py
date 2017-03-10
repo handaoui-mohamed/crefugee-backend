@@ -23,6 +23,7 @@ from app.upload import views
 from app.contact import views
 from app.moderator import views
 from app.post import views
+from app.message import views
 
 # import models
 from app.user.models import User
