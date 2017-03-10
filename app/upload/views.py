@@ -6,6 +6,7 @@ from werkzeug import secure_filename
 from config import UPLOAD_FOLDER, ALLOWED_EXTENSIONS, basedir
 from app.upload.models import PostUpload, ProfilePicture, LegalDocument
 from app.user.views import login_required
+from app.post.models import Post
 
 
 # For a given file, return whether it's an allowed type or not
@@ -14,44 +15,41 @@ def allowed_file(filename):
 
 
 # Route that will process the file upload
-@app.route('/api/upload', methods=['POST'])
+@app.route('/api/upload/<int:post_id>', methods=['POST'])
 @login_required
-def upload():
-    print request.get_data()
-    file = request.files.get("file")
-    post_id = request.args.get('post_id')
-    print post_id
-    if post_id:
-        post = Post.query.get(post_id)
-        if post.user_id is not g.user.id:
-            abort(501)
-    else:
-        abort(404)
+def upload(post_id):
+    file = request.files.get("post_image")
+    post = Post.query.get(int(post_id))
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
-        directory = os.path.join(basedir, UPLOAD_FOLDER, 'post', post_id)
-        if not os.path.exists(directory):
+        directory = os.path.join(basedir, UPLOAD_FOLDER, 'post', str(post_id))
+        if os.path.exists(directory):
+            old_picture = post.image
+            file_path = os.path.join(directory, old_picture.name)
+            db.session.delete(old_picture)
+            db.session.commit()
+            if os.path.exists(file_path):
+                os.remove(file_path)
+        else:
             os.makedirs(directory)
         file_path = os.path.join(directory, filename)
-        i = 0
-        while os.path.exists(file_path):
-            filename = "%s%s"%(i,filename)
-            file_path = os.path.join(directory, filename)
         file.save(file_path)
-        uploaded_file = PostUpload(name=filename,post=post,user=g.user)
-        db.session.add(uploaded_file)
+        uploaded_image = PostUpload(name=filename,post=post,user=g.user)
+        db.session.add(uploaded_image)
         db.session.commit()
-    return jsonify({'element':post.to_json()})
+        return jsonify({'element':post.to_json()})
+    abort(400)
 
 
 @app.route('/api/uploads/<int:id>', methods=['DELETE'])
 @login_required
 def delete_file(id):
     file = PostUpload.query.get(id)
+    print file
     if file and file.user_id == g.user.id:
         db.session.delete(file)
         db.session.commit()
-        file_path = os.path.join(basedir, UPLOAD_FOLDER, 'post', file.post_id, file.name)
+        file_path = os.path.join(basedir, UPLOAD_FOLDER, 'post', str(file.post_id), file.name)
         if os.path.exists(file_path):
             os.remove(file_path)
             return jsonify({'success': 'true'}), 200
@@ -59,7 +57,7 @@ def delete_file(id):
 
 @app.route('/api/uploads/post/<int:post_id>/<string:filename>')
 def get_file(post_id, filename):
-    directory = os.path.join(basedir, UPLOAD_FOLDER, 'post', post_id)
+    directory = os.path.join(basedir, UPLOAD_FOLDER, 'post', str(post_id))
     return send_from_directory(directory, filename)
 
 
@@ -72,7 +70,7 @@ def upload_profile_image():
         filename = secure_filename(file.filename)
         directory = os.path.join(basedir, UPLOAD_FOLDER, g.user.username, 'profile')
         if os.path.exists(directory):
-            old_picture = g.user.profile_image_id
+            old_picture = g.user.profile_image
             file_path = os.path.join(directory, old_picture.name)
             db.session.delete(old_picture)
             db.session.commit()
@@ -96,15 +94,17 @@ def get_profile_image(username, filename):
 
 
 # profile picture upload
-@app.route('/api/upload/legaldoucment', methods=['POST'])
+@app.route('/api/upload/legaldocument', methods=['POST'])
 @login_required
 def upload_legal_document():
+    if g.user.helper:
+        abort(501)
     file = request.files.get("legal_document")
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         directory = os.path.join(basedir, UPLOAD_FOLDER, g.user.username, 'legal_document')
         if os.path.exists(directory):
-            old_document = LegalDocument.query.get(g.user.legal_document_id)
+            old_document = g.user.legal_document
             file_path = os.path.join(directory, old_document.name)
             db.session.delete(old_document)
             db.session.commit()
@@ -117,7 +117,7 @@ def upload_legal_document():
         uploaded_image = LegalDocument(name=filename,user=g.user)
         db.session.add(uploaded_image)
         db.session.commit()
-    return jsonify({'element':g.user.to_json()})
+    return jsonify({'element':g.user.to_json_doc()})
 
 
 @app.route('/api/uploads/legaldocument/<string:username>/<string:filename>')

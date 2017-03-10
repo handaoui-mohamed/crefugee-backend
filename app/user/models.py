@@ -68,7 +68,7 @@ class User(db.Model):
             'phone_number': self.phone_number,
             'description': self.description,
             'tags': [element.to_json() for element in self.tags],
-            'profile_image':  self.profile_image.to_json() if self.profile_image else None
+            'profile_image':  self.profile_image.to_json(self.username) if self.profile_image else None
         }
 
     # for administration
@@ -83,8 +83,8 @@ class User(db.Model):
             'email': self.email,
             'phone_number': self.phone_number,
             'description': self.description,
-            'tags': [element.to_json() for element in self.tags.all()],
-            'legal_document':  self.legal_document.to_json() if self.legal_document else None
+            'tags': [element.to_json() for element in self.tags],
+            'legal_document':  self.legal_document.to_json(self.username) if self.legal_document else None
         }
 
     def to_json_post(self):

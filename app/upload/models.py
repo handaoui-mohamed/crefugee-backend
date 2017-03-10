@@ -12,7 +12,7 @@ class PostUpload(db.Model):
     def to_json(self):
         return {
             'id': self.id,
-            'path': os.path.join(HOST_URL, UPLOAD_FOLDER, 'post', post_id).replace("\\", "/"),
+            'path': os.path.join(HOST_URL, UPLOAD_FOLDER, 'post', str(self.post_id), self.name).replace("\\", "/"),
             'name': self.name
         }
 
@@ -40,7 +40,7 @@ class LegalDocument(db.Model):
     def to_json(self, username):
         return {
             'id': self.id,
-            'path': os.path.join(HOST_URL, UPLOAD_FOLDER, 'legal_document', username, self.name).replace("\\", "/"),
+            'path': os.path.join(HOST_URL, UPLOAD_FOLDER, 'legaldocument', username, self.name).replace("\\", "/"),
             'name': self.name,
             'user_id': self.user_id
         }

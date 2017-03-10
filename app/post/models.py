@@ -13,7 +13,7 @@ class Post(db.Model):
     title = db.Column(db.String(100))
     content = db.Column(db.String)
     tags = db.relationship('Tag', secondary=PostTag, backref='post')
-    files = db.relationship('PostUpload', backref='post', lazy='dynamic')
+    image = db.relationship('PostUpload', uselist=False, backref='post')
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     posted_at = db.Column(db.DateTime)
     helper_post = db.Column(db.Boolean, default=False)
@@ -24,7 +24,7 @@ class Post(db.Model):
             "title": self.title,
             "content": self.content,
             "tags": [element.to_json() for element in self.tags],
-            "files": [element.to_json() for element in self.files.all()],
+            "image": self.image.to_json() if self.image else None,
             "posted_at": self.posted_at
         }
 
