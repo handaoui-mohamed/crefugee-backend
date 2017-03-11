@@ -19,12 +19,14 @@ class Post(db.Model):
     helper_post = db.Column(db.Boolean, default=False)
 
     def to_json(self):
+        from app.user.models import User
         return {
             "id": self.id,
             "title": self.title,
             "content": self.content,
             "tags": [element.to_json() for element in self.tags],
             "image": self.image.to_json() if self.image else None,
+            "user": User.query.get(self.user_id).to_json(),
             "posted_at": self.posted_at
         }
 
