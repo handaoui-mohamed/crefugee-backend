@@ -84,7 +84,7 @@ def get_user_by_username(username):
     user = User.query.filter_by(username=username).first();
     if not user:
         abort(404)
-    return jsonify({'element':user.to_json()})
+    return jsonify({'element':user.to_json_post()})
 
 
 @app.route('/api/users')

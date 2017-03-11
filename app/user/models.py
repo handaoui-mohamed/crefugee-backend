@@ -98,8 +98,9 @@ class User(db.Model):
             'email': self.email,
             'phone_number': self.phone_number,
             'description': self.description,
-            'tags': [element.to_json() for element in self.tags.all()],
-            'posts': [element.to_json() for element in self.posts.all()],
+            'tags': [element.to_json() for element in self.tags],
+            'posts': [element.to_json() for element in self.posts],
+            'profile_image':  self.profile_image.to_json(self.username) if self.profile_image else None
         }
 
 
