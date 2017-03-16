@@ -7,9 +7,9 @@ from app.user.models import User
 from app.message.models import Message
 from config import NUM_PAGES
 
-messages_api = api.namespace('Messages', description='For sending and showing messages between users')
+messages_api = api.namespace('messages', description='For sending and showing messages between users')
 
-@messages_api.route('/message')
+@messages_api.route('')
 class UserMessage(Resource):
     @login_required 
     def post(self):
@@ -23,8 +23,7 @@ class UserMessage(Resource):
         db.session.commit()
         return {"element": message.to_json()}
 
-@messages_api.route('/api/message/<int:reciever_id>')
-@messages_api.route('/api/message/<int:reciever_id>/<int:page>')
+@messages_api.route('/<string:reciever_id>','/<string:reciever_id>/<int:page>')
 class UserMessages(Resource):
     @login_required
     def get(self, reciever_id, page=0):

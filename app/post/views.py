@@ -8,10 +8,11 @@ from app.post.forms import PostForm
 from app.user.auth import login_required
 from datetime import datetime
 from config import POSTS_PER_PAGE
+import uuid
 
-post_api = api.namespace('Posts', description='For sending and showing users posts')
+post_api = api.namespace('posts', description='For sending and showing users posts')
 
-@post_api.route('/posts', endpoint="Add a post")
+@post_api.route('')
 class NewPost(Resource):
     @login_required
     def post(self):
@@ -24,7 +25,7 @@ class NewPost(Resource):
             title = data.get('title')
             content = data.get('content')
             helper_post = data.get('helper_post', False)
-            post = Post(title=title.lower(), content=content, user=g.user,\
+            post = Post(id=uuid.uuid4().hex,title=title.lower(), content=content, user=g.user,\
                         posted_at=datetime.utcnow(), helper_post=helper_post)
             post.add_tags(tags)
             db.session.add(post)
@@ -36,7 +37,7 @@ class NewPost(Resource):
         posts = Post.query.all()
         return {'elements': [element.to_json() for element in posts]}
 
-@post_api.route('/posts/<int:post_id>')
+@post_api.route('/<int:post_id>')
 class PostById(Resource):
     @login_required
     def put(self, post_id):
@@ -73,15 +74,13 @@ class PostById(Resource):
         db.session.commit()
         return '', 204
 
-@post_api.route('/posts/helper')
-@post_api.route('/post/helper/<int:page>')
+@post_api.route('/helper','/helper/<int:page>')
 class HelperPost(Resource):
     def get(self, page=1):
         posts = Post.query.filter_by(helper_post=True).order_by(Post.posted_at.desc()).paginate(page, POSTS_PER_PAGE, False).items
         return {'elements': [element.to_json() for element in posts]}
 
-@post_api.route('/posts/refugee')
-@post_api.route('/posts/refugee/<int:page>')
+@post_api.route('/refugee','/refugee/<int:page>')
 class RefugeePost(Resource):
     def get(self, page=1):
         posts = Post.query.filter_by(helper_post=False).order_by(Post.posted_at.desc()).paginate(page, POSTS_PER_PAGE, False).items

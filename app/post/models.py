@@ -3,13 +3,13 @@ from app.tag.models import Tag
 
 PostTag = db.Table(
     'PostTag',
-    db.Column('id', db.Integer, primary_key=True),
+    db.Column('id', db.String, primary_key=True),
     db.Column('post_id', db.Integer, db.ForeignKey('post.id')),
     db.Column('tag_id', db.Integer, db.ForeignKey('tag.id'))
 )
 
 class Post(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String, primary_key=True)
     title = db.Column(db.String(100))
     content = db.Column(db.String)
     tags = db.relationship('Tag', secondary=PostTag, backref='post')

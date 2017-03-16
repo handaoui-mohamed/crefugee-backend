@@ -15,7 +15,7 @@ lm.login_message = 'Veuillez vous connecter pour acceder a cette page.'
 
 @lm.user_loader
 def load_user(id):
-    return User.query.get(int(id))
+    return User.query.get(id)
 
 @app.before_request
 def before_request():
@@ -52,7 +52,7 @@ def non_valid_users():
     users = User.query.filter_by(validated=False).all()
     return render_template('users.html',title='Validation des Utilisateurs',users=users)
 
-@app.route('/users/<int:id>')
+@app.route('/users/<string:id>')
 @login_required
 def validate_user(id):
     user = User.query.get(id)

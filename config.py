@@ -11,6 +11,7 @@ else:
     HOST_URL = 'https://crefugee-api.herokuapp.com/api/v1'
 SQLALCHEMY_COMMIT_ON_TEARDOWN=True
 SQLALCHEMY_TRACK_MODIFICATIONS=True
+ERROR_404_HELP=True
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 CORS_HEADERS = 'Content-Type'
