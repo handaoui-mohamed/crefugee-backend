@@ -21,14 +21,11 @@ class Users(Resource):
             password = data.get('password')
             helper = data.get('is_refugee', False)
             email = data.get('email')
-            remember_me = data.get('remember_me', False)
             user = User(id=uuid.uuid4().hex,username=username.lower(), email=email.lower(), refugee=refugee)
             user.hash_password(password)
             db.session.add(user)
             db.session.commit()
-            duration = DAY if not remember_me else YEAR
-            token = create_token(user, duration)
-            return {'token': token.decode('ascii'), 'user_id': user.id}, 201
+            return {'element': user.to_json()}, 201
         return {"form_errors": form.errors}, 400
 
     def get(self):

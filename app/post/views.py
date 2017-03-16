@@ -24,9 +24,8 @@ class NewPost(Resource):
         if form.validate():
             title = data.get('title')
             content = data.get('content')
-            helper_post = data.get('helper_post', False)
             post = Post(id=uuid.uuid4().hex,title=title.lower(), content=content, user=g.user,\
-                        posted_at=datetime.utcnow(), helper_post=helper_post)
+                        posted_at=datetime.utcnow(), refugee_post=g.user.refugee)
             post.add_tags(tags)
             db.session.add(post)
             db.session.commit()
@@ -77,11 +76,11 @@ class PostById(Resource):
 @post_api.route('/helper','/helper/<int:page>')
 class HelperPost(Resource):
     def get(self, page=1):
-        posts = Post.query.filter_by(helper_post=True).order_by(Post.posted_at.desc()).paginate(page, POSTS_PER_PAGE, False).items
+        posts = Post.query.filter_by(refugee_post=False).order_by(Post.posted_at.desc()).paginate(page, POSTS_PER_PAGE, False).items
         return {'elements': [element.to_json() for element in posts]}
 
 @post_api.route('/refugee','/refugee/<int:page>')
 class RefugeePost(Resource):
     def get(self, page=1):
-        posts = Post.query.filter_by(helper_post=False).order_by(Post.posted_at.desc()).paginate(page, POSTS_PER_PAGE, False).items
+        posts = Post.query.filter_by(refugee_post=True).order_by(Post.posted_at.desc()).paginate(page, POSTS_PER_PAGE, False).items
         return {'elements': [element.to_json() for element in posts]}
