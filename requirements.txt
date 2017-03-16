@@ -9,3 +9,4 @@ psycopg2
 wtforms
 flask-wtf
 Flask_Login
+Flask-restplus
