@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 import os
-from flask import Flask
+from flask import Flask, Blueprint
 from flask_sqlalchemy import SQLAlchemy
+from flask_restplus import Api
 from config import basedir
 from flask_cors import CORS
 import sys  
@@ -11,7 +12,13 @@ sys.setdefaultencoding('utf8')
 
 # initialization
 app = Flask(__name__)
+blueprint = Blueprint('api', __name__, url_prefix='/api/v1') 
 app.config.from_object('config')
+# resfull api
+api = Api(blueprint, version='1.0', title='Connected Refugees',
+    description='An api for web and mobile app to help connecting refugees and helpers'
+)
+app.register_blueprint(blueprint)
 # extensions
 db = SQLAlchemy(app)
 
