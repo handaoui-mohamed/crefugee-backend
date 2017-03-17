@@ -1,8 +1,10 @@
 from app import db, api
 from flask_restplus import Resource
-from flask import abort, request, g
+from flask import abort, g
 from app.user.models import User
+from app.user.decorators import admin_required
 from app.tag.models import Tag
+from app.tag.serializers import tag_model
 
 # add auth required and verify admin role
 
@@ -12,15 +14,22 @@ tag_api = api.namespace('tags', description='For showing posts and users Tags')
 @tag_api.route('')
 class Tags(Resource):
     def get(self):
+        """
+        Returns all tags.
+        """
         return {'elements': [element.to_json() for element in Tag.query.all()]}
     
+    @tag_api.expect(tag_model)
+    @admin_required
     def post(self):
-        data = request.get_json(force=True)
+        """
+        Adds a new tag.
+        """
+        data = api.payload
         name = data.get('name')
-        pass_code = data.get('pass_code')
 
-        if pass_code is None or name is None or Tag.query.filter_by(name=name).first() is not None:
-            abort(400)    # missing arguments or existing one 
+        if Tag.query.filter_by(name=name).first() is not None:
+            abort(400)
 
         tag = Tag(name=name)
         db.session.add(tag)
@@ -31,34 +40,47 @@ class Tags(Resource):
 @tag_api.route('/<int:id>')
 class TagsById(Resource):
     def get(self, id):
+        """
+        Returns tag by id.
+        """
         tag = Tag.query.get(id)
         if tag is None:
-            abort(400)
-        return {'element': tag.to_json_users()}
+            abort(404)
+        return {'element': tag.to_json_posts()}
 
+    @tag_api.expect(tag_model)
+    @admin_required
     def put(self, id):
+        """
+        Update tag's name.
+        """
         tag = Tag.query.get(id)
         if tag is None:
-            abort(400)
-        data = request.get_json(force=True)
-        name = data.get('name')
-        description = data.get('description', tag.description)
-        pass_code = data.get('pass_code')
+            abort(404)
 
-        if pass_code is None:
-            abort(400)
+        data = api.payload
+        name = data.get('name')
 
         new_tag = False
         existing_tag = Tag.query.filter_by(name=name).first()
         if (existing_tag is None) or (existing_tag.id == tag.id and not (name == tag.name)): new_tag =True
 
-        if new_tag and name: tag.name = name
-        db.session.add(tag)
-        db.session.commit()
-        return {'element': tag.to_json()}, 201
+        if new_tag and name: 
+            tag.name = name
+            db.session.add(tag)
+            db.session.commit()
+            return {'element': tag.to_json()}, 201
+        else:
+            return {'message': "The tag\'s name already exists!"}, 400
 
+    @admin_required
     def delete(self, id):
+        """
+        Delete a tag.
+        """
         tag = Tag.query.get(id)
+        if tag is None:
+            abort(404)
         db.session.delete(tag)
         db.session.commit()
         return '', 204

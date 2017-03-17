@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-from flask import render_template, flash, redirect, session, url_for, request, \
-    g, jsonify
+from flask import render_template, flash, redirect, session, url_for, request,g
 from flask_login import login_user, logout_user, current_user, login_required
-from app import app, db
+from app import app, db, api
 from flask_login import LoginManager
 from app.user.forms import AdminLoginForm
 from app.user.models import User
+import json
 
 
 lm = LoginManager()
@@ -52,7 +52,7 @@ def non_valid_users():
     users = User.query.filter_by(validated=False).all()
     return render_template('users.html',title='Validation des Utilisateurs',users=users)
 
-@app.route('/users/<string:id>')
+@app.route('/users/<string:id>/validate')
 @login_required
 def validate_user(id):
     user = User.query.get(id)
@@ -62,7 +62,7 @@ def validate_user(id):
     # flash("L\'utilisateur a été valider avec succée")
     return redirect(url_for('non_valid_users'))
 
-@app.route('/users/<int:id>')
+@app.route('/users/<string:id>/delete')
 @login_required
 def delete_user(id):
     user = User.query.get(id)
@@ -76,4 +76,14 @@ def delete_user(id):
 @login_required
 def logout():
     logout_user()
+    return redirect(url_for('index'))
+
+
+@app.route('/postman')
+def postman():
+    urlvars = False # Build query strings in URLs
+    swagger = True # Export Swagger specifications
+    data = api.as_postman(urlvars=urlvars, swagger=swagger)
+    f = open("postman_import.json", 'w')
+    f.write(json.dumps(data))
     return redirect(url_for('index'))

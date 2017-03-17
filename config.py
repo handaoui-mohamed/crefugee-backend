@@ -6,12 +6,13 @@ SECRET_KEY = 'k@tj5C:!uj7B}vtJi2p7a0_vGu["x418E=_wU&WohA#>lRYWkX))q5T}h9M_!kskld
 if os.environ.get('DATABASE_URL') is None:
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'db.sqlite')
     HOST_URL = 'http://localhost:5000/api/v1'
+    ERROR_404_HELP=True
 else:
     SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
     HOST_URL = 'https://crefugee-api.herokuapp.com/api/v1'
+    ERROR_404_HELP=False
 SQLALCHEMY_COMMIT_ON_TEARDOWN=True
 SQLALCHEMY_TRACK_MODIFICATIONS=True
-ERROR_404_HELP=True
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 CORS_HEADERS = 'Content-Type'

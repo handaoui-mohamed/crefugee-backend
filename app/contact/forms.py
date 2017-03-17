@@ -6,7 +6,7 @@ from wtforms.validators import DataRequired, Length
 
 
 class ContactForm(FlaskForm):
-    user_name = StringField('user_name',validators=[
+    username = StringField('username',validators=[
         DataRequired('Votre Nom et Prénom sont nécessaires')
     ])
     email = EmailField('email', [

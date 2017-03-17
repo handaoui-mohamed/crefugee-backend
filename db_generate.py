@@ -6,6 +6,9 @@ from app.role.models import Role
 import json
 import uuid
 
+# drop all tables
+db.drop_all()
+
 # create all tables
 db.create_all()
 
@@ -14,7 +17,7 @@ with open("tags.json", "r") as tag_json:
     tags = json.load(tag_json)
 
 for tag in tags:
-    db.session.add(Tag(name=tag["name"]))
+    db.session.add(Tag(name=tag["name"].lower()))
     db.session.commit()
 
 # create roles

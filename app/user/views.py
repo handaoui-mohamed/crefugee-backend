@@ -1,37 +1,43 @@
 from app import db, api
 from flask_restplus import Resource
 from app.user.models import User
-from app.user.auth import create_token, parse_token, login_required, admin_required
-from app.user.forms import RegistrationForm, UpdateForm, registration_model
+from app.user.decorators import create_token, parse_token, login_required, admin_required
+from app.user.serializers import registration_model, user_login_model, profile_model
+from app.user.forms import RegistrationForm, UpdateForm
 from app.tag.models import Tag
-from flask import abort, request, g
-from config import YEAR, DAY, SECRET_KEY
-from werkzeug.datastructures import MultiDict
+from flask import abort, g
+from config import YEAR, DAY
 import uuid
 
 users_api = api.namespace('users', description='All operations about USERS')
 
 @users_api.route('')
 class Users(Resource):
-
     @users_api.expect(registration_model)
     def post(self):
+        """
+        Adds a new User.
+        """
         data = api.payload
-        form = RegistrationForm(MultiDict(mapping=data))
+        form = RegistrationForm.from_json(data)
         if form.validate():
             username = data.get('username')
             password = data.get('password')
             refugee = data.get('is_refugee', False)
             email = data.get('email')
-            user = User(id=uuid.uuid4().hex,username=username.lower(), email=email.lower(), refugee=refugee)
+            user = User(id=uuid.uuid4().hex,username=username.lower(), email=email.lower(), refugee=refugee, role_id=1)
             user.hash_password(password)
             db.session.add(user)
             db.session.commit()
             return {'element': user.to_json()}, 201
         return {"form_errors": form.errors}, 400
 
+    @api.doc(security='Token')
     @admin_required
     def get(self):
+        """
+        Returns all users.
+        """
         users = User.query.all()
         return  {'elements': [element.to_json() for element in users]}
 
@@ -42,6 +48,9 @@ class Users(Resource):
 @users_api.param('id', 'The user\'s id')
 class UserById(Resource):
     def get(self, id):
+        """
+        Returns a user by id.
+        """
         user = User.query.get(id)
         if not user:
             abort(404)
@@ -53,16 +62,25 @@ class UserById(Resource):
 @users_api.param('username', 'The user\'s username')
 class UserByUsername(Resource):
     def get(self, username):
+        """
+        Returns a user by his username.
+        """
         user = User.query.filter_by(username=username).first()
         if not user:
             abort(404)
         return {'element':user.to_json_post()}
 
 users_login = api.namespace('login', description='User login')
+
 @users_login.route('')
 class Login(Resource):
+
+    @users_login.expect(user_login_model)
     def post(self):
-        data = request.get_json(force=True)
+        """
+        Used to login a user, returns Token and User.
+        """
+        data = api.payload
         username = data.get('username')
         password = data.get('password')
         remember_me = data.get('remember_me', False)
@@ -80,13 +98,20 @@ users_profile = api.namespace('profile', description='User profile')
 class Profile(Resource):
     @login_required
     def get(self):
+        """
+        Returns current user's profile.
+        """
         return {'element':g.user.to_json()}
         
+    @users_profile.expect(profile_model)
     @login_required
     def put(self):
+        """
+        Update current user's profile.
+        """
         user = g.user
-        data = request.get_json(force=True)
-        form = UpdateForm(MultiDict(mapping=data))
+        data = api.payload
+        form = UpdateForm.from_json(data)
         if form.validate():
             password = data.get('password')
             full_name = data.get('full_name', user.full_name)
