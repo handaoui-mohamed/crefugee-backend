@@ -44,3 +44,27 @@ def login_required(f):
         g.user = User.query.get(g.user_id)
         return f(*args, **kwargs)
     return decorated_function
+
+
+def admin_required(f):
+    @wraps(f)
+    @login_required
+    def decorated_function(*args, **kwargs):
+        if not g.user.is_administrator:
+            response = jsonify(message='User do not have the right permission')
+            response.status_code = 403
+            return response
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+def moderator_required(f):
+    @wraps(f)
+    @login_required
+    def decorated_function(*args, **kwargs):
+        if not g.user.is_moderator:
+            response = jsonify(message='User do not have the right permission')
+            response.status_code = 403
+            return response
+        return f(*args, **kwargs)
+    return decorated_function

@@ -20,3 +20,5 @@ YEAR = 365
 DAY = 24
 NUM_PAGES = 10
 POSTS_PER_PAGE = 12
+
+#manage.py page 82

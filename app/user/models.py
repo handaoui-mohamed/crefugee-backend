@@ -9,15 +9,14 @@ from config import SECRET_KEY
 
 UserTag = db.Table(
     'UserTag',
-    db.Column('id', db.String, primary_key=True),
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('id', db.Integer, primary_key=True),
+    db.Column('user_id', db.String, db.ForeignKey('user.id')),
     db.Column('tag_id', db.Integer, db.ForeignKey('tag.id'))
 )
 
 
 class User(db.Model):
     id = db.Column(db.String, primary_key=True)
-    # id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), index=True, unique=True)
     password_hash = db.Column(db.String)
     full_name = db.Column(db.String(100))
@@ -26,8 +25,8 @@ class User(db.Model):
     phone_number = db.Column(db.String(20))
     description = db.Column(db.Text)
     validated = db.Column(db.Boolean, default=False)
-    admin = db.Column(db.Boolean, default=False)
     refugee = db.Column(db.Boolean, default=False)
+    role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
     tags = db.relationship('Tag', secondary=UserTag, backref='user')
     posts = db.relationship('Post', backref='user', lazy='dynamic')
     files = db.relationship('PostUpload', backref='user', lazy='dynamic')
@@ -56,6 +55,18 @@ class User(db.Model):
             return None    # invalid token
         user = User.query.get(data['id'])
         return user
+
+    @property
+    def is_moderator(self):
+        if self.role.name == "Administrator" or self.role.name == "Moderator":
+            return True
+        return False
+
+    @property
+    def is_administrator(self):
+        if self.role.name == "Administrator":
+            return True
+        return False
 
     @property
     def is_authenticated(self):

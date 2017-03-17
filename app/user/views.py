@@ -1,8 +1,8 @@
 from app import db, api
 from flask_restplus import Resource
 from app.user.models import User
-from app.user.auth import create_token, parse_token, login_required
-from app.user.forms import RegistrationForm, UpdateForm
+from app.user.auth import create_token, parse_token, login_required, admin_required
+from app.user.forms import RegistrationForm, UpdateForm, registration_model
 from app.tag.models import Tag
 from flask import abort, request, g
 from config import YEAR, DAY, SECRET_KEY
@@ -13,13 +13,15 @@ users_api = api.namespace('users', description='All operations about USERS')
 
 @users_api.route('')
 class Users(Resource):
+
+    @users_api.expect(registration_model)
     def post(self):
-        data = request.get_json(force=True)
+        data = api.payload
         form = RegistrationForm(MultiDict(mapping=data))
         if form.validate():
             username = data.get('username')
             password = data.get('password')
-            helper = data.get('is_refugee', False)
+            refugee = data.get('is_refugee', False)
             email = data.get('email')
             user = User(id=uuid.uuid4().hex,username=username.lower(), email=email.lower(), refugee=refugee)
             user.hash_password(password)
@@ -28,12 +30,16 @@ class Users(Resource):
             return {'element': user.to_json()}, 201
         return {"form_errors": form.errors}, 400
 
+    @admin_required
     def get(self):
         users = User.query.all()
         return  {'elements': [element.to_json() for element in users]}
 
 
 @users_api.route('/<string:id>')
+@users_api.response(404, 'User not found')
+@users_api.response(200, 'User profile without posts')
+@users_api.param('id', 'The user\'s id')
 class UserById(Resource):
     def get(self, id):
         user = User.query.get(id)
@@ -42,6 +48,9 @@ class UserById(Resource):
         return {'element':user.to_json()}
 
 @users_api.route('/username/<string:username>')
+@users_api.response(404, 'User not found')
+@users_api.response(200, 'User profile with posts')
+@users_api.param('username', 'The user\'s username')
 class UserByUsername(Resource):
     def get(self, username):
         user = User.query.filter_by(username=username).first()

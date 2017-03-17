@@ -22,7 +22,7 @@ app.register_blueprint(blueprint)
 # extensions
 db = SQLAlchemy(app)
 
-cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+cors = CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
 # import APIs
 from app.user import views
 from app.tag import views
@@ -33,6 +33,7 @@ from app.post import views
 from app.message import views
 
 # import models
+from app.role.models import Role
 from app.user.models import User
 from app.tag.models import Tag
 from app.upload.models import PostUpload, ProfilePicture, LegalDocument

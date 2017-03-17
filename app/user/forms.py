@@ -4,7 +4,8 @@ from wtforms import StringField, PasswordField, validators, BooleanField
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import DataRequired, Length
 from app.user.models import User
-
+from app import api
+from flask_restplus import fields
 
 class RegistrationForm(FlaskForm):
     username = StringField('username',validators=[
@@ -63,6 +64,14 @@ class AdminLoginForm(FlaskForm):
             return False
         
         user = User.query.filter_by(username=self.username.data).first()
-        if not user or not user.verify_password(self.password.data) or not user.admin:
+        if not user or not user.verify_password(self.password.data) or not user.is_moderator:
             return False
         return True
+
+# Models for swagger
+registration_model = api.model('User', {
+    'username': fields.String(required=True),
+    'email': fields.String(required=True),
+    'password': fields.String(required=True),
+    'is_refugee': fields.Boolean
+})
