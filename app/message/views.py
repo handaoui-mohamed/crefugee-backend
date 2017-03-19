@@ -1,16 +1,19 @@
-from app import db, api, io
+from app import db, api, io, authorization
 from flask_restplus import Resource
 from datetime import datetime
 from flask import abort, request, g
-from app.user.auth import login_required
+from app.user.decorators import login_required
 from app.user.models import User
 from app.message.models import Message
 from config import NUM_PAGES
+from flask_socketio import emit, disconnect
 
 messages_api = api.namespace('messages', description='For sending and showing messages between users')
 
 @messages_api.route('')
 class UserMessage(Resource):
+    
+    @messages_api.expect(authorization)
     @login_required 
     def post(self):
         data = request.get_json(force=True)
@@ -25,6 +28,7 @@ class UserMessage(Resource):
 
 @messages_api.route('/<string:reciever_id>','/<string:reciever_id>/<int:page>')
 class UserMessages(Resource):
+    @messages_api.expect(authorization)
     @login_required
     def get(self, reciever_id, page=0):
         # TODO: everything using one query!!!!!!!
@@ -40,21 +44,22 @@ class UserMessages(Resource):
 def getKey(message):
     return message.sent_at
 
+# SocketIo for messages
 @io.on('connect', namespace='/message')
 def connect():
-    print request.sid
-    print("user connected to messages")
-    io.emit("my_response", "hellp")
+    pass
 
-@io.on('disconnect', namespace='/message')
+@io.on('disconnect_request', namespace='/message')
 def disconnect():
-    print('Client disconnected from messages')
+    # delete user
+    disconnect()
 
 @io.on('message', namespace='/message')
 def handle_message(message):
     print message["data"]
-    io.emit('my_response', {'data': message['data']})
+    emit('my_response', {'data': message['data']})
 
 @io.on('my_event', namespace='/message')
 def test_message(message):
-    io.emit('my_response',{'data': message['data']})
+    print('my_response',{'data': message['data']})
+    emit('my_response', {'data': message['data']}, broadcast=True)

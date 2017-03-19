@@ -17,19 +17,14 @@ app = Flask(__name__)
 blueprint = Blueprint('api', __name__, url_prefix='/api/v1') 
 app.config.from_object('config')
 # resfull api
-authorizations = {
-    'Token': {
-        'type': 'apiKey',
-        'in': 'header',
-        'name': 'JWT Token'
-    }
-}
-
 api = Api(blueprint, version='1.0', title='Connected Refugees',
-    description='An api for web and mobile app to help connecting refugees and helpers',
-    authorizations=authorizations
+    description='An api for web and mobile app to help connecting refugees and helpers'
 )
 app.register_blueprint(blueprint)
+
+authorization = api.parser()
+authorization.add_argument('Authorization', help="Always append 'bacon ' before Token",\
+                             type=str, location='headers', required=True)
 # extensions
 db = SQLAlchemy(app)
 

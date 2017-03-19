@@ -16,7 +16,7 @@ class Post(db.Model):
     image = db.relationship('PostUpload', uselist=False, backref='post')
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     posted_at = db.Column(db.DateTime)
-    helper_post = db.Column(db.Boolean, default=False)
+    refugee_post = db.Column(db.Boolean, default=False)
 
     def to_json(self):
         from app.user.models import User
@@ -27,7 +27,8 @@ class Post(db.Model):
             "tags": [element.to_json() for element in self.tags],
             "image": self.image.to_json() if self.image else None,
             "user": User.query.get(self.user_id).to_json(),
-            "posted_at": self.posted_at
+            "posted_at": self.posted_at,
+            "refugee_post": refugee_post
         }
 
     def add_tags(self, tags):

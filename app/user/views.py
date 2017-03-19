@@ -1,8 +1,8 @@
-from app import db, api
+from app import db, api, authorization
 from flask_restplus import Resource
 from app.user.models import User
 from app.user.decorators import create_token, parse_token, login_required, admin_required
-from app.user.serializers import registration_model, user_login_model, profile_model
+from app.user.serializers import registration_model, user_login_model, profile_model, users_parser
 from app.user.forms import RegistrationForm, UpdateForm
 from app.tag.models import Tag
 from flask import abort, g
@@ -32,14 +32,16 @@ class Users(Resource):
             return {'element': user.to_json()}, 201
         return {"form_errors": form.errors}, 400
 
-    @api.doc(security='Token')
-    @admin_required
+    @users_api.expect(users_parser)
     def get(self):
         """
         Returns all users.
         """
-        users = User.query.all()
-        return  {'elements': [element.to_json() for element in users]}
+        username = users_parser.parse_args()['username']
+        if not username: abort(400)
+        user = User.query.filter_by(username=username).first()
+        if not user: abort(404)
+        return  {'element': user.to_json_post()}
 
 
 @users_api.route('/<string:id>')
@@ -47,6 +49,8 @@ class Users(Resource):
 @users_api.response(200, 'User profile without posts')
 @users_api.param('id', 'The user\'s id')
 class UserById(Resource):
+    @users_api.expect(authorization)
+    @login_required
     def get(self, id):
         """
         Returns a user by id.
@@ -56,25 +60,10 @@ class UserById(Resource):
             abort(404)
         return {'element':user.to_json()}
 
-@users_api.route('/username/<string:username>')
-@users_api.response(404, 'User not found')
-@users_api.response(200, 'User profile with posts')
-@users_api.param('username', 'The user\'s username')
-class UserByUsername(Resource):
-    def get(self, username):
-        """
-        Returns a user by his username.
-        """
-        user = User.query.filter_by(username=username).first()
-        if not user:
-            abort(404)
-        return {'element':user.to_json_post()}
-
 users_login = api.namespace('login', description='User login')
 
 @users_login.route('')
 class Login(Resource):
-
     @users_login.expect(user_login_model)
     def post(self):
         """
@@ -96,6 +85,8 @@ class Login(Resource):
 users_profile = api.namespace('profile', description='User profile')
 @users_profile.route('')
 class Profile(Resource):
+    
+    @users_api.expect(authorization)
     @login_required
     def get(self):
         """
@@ -103,9 +94,9 @@ class Profile(Resource):
         """
         return {'element':g.user.to_json()}
         
-    @users_profile.expect(profile_model)
+    @users_profile.expect(authorization,profile_model)
     @login_required
-    def put(self):
+    def put(self): 
         """
         Update current user's profile.
         """

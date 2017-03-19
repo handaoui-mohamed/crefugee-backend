@@ -1,6 +1,9 @@
 from app import api
-from flask_restplus import fields
+from flask_restplus import fields, reqparse
 
+# Request Parsers
+users_parser = reqparse.RequestParser()
+users_parser.add_argument('username', type=str, help='Username is required', required=True)
 # Models for swagger
 registration_model = api.model('User registration', {
     'username': fields.String(required=True),

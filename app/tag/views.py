@@ -1,4 +1,4 @@
-from app import db, api
+from app import db, api, authorization
 from flask_restplus import Resource
 from flask import abort, g
 from app.user.models import User
@@ -19,7 +19,7 @@ class Tags(Resource):
         """
         return {'elements': [element.to_json() for element in Tag.query.all()]}
     
-    @tag_api.expect(tag_model)
+    @tag_api.expect(authorization,tag_model)
     @admin_required
     def post(self):
         """
@@ -48,7 +48,7 @@ class TagsById(Resource):
             abort(404)
         return {'element': tag.to_json_posts()}
 
-    @tag_api.expect(tag_model)
+    @tag_api.expect(authorization,tag_model)
     @admin_required
     def put(self, id):
         """
@@ -73,6 +73,7 @@ class TagsById(Resource):
         else:
             return {'message': "The tag\'s name already exists!"}, 400
 
+    @tag_api.expect(authorization)
     @admin_required
     def delete(self, id):
         """

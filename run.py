@@ -5,4 +5,5 @@ from app import app, io
 #         app.run(debug=True)
 #     except:
 #         pass
-io.run(app,debug=True)
+app.run(debug=True)
+# io.run(app,debug=True)

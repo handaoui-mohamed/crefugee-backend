@@ -1,4 +1,4 @@
-from app import db, api
+from app import db, api, authorization
 from flask_restplus import Resource
 from flask import abort, request, g
 from werkzeug.datastructures import MultiDict
@@ -14,6 +14,7 @@ post_api = api.namespace('posts', description='For sending and showing users pos
 
 @post_api.route('')
 class NewPost(Resource):
+    @post_api.expect(authorization)
     @login_required
     def post(self):
         data = request.get_json(force=True)
@@ -38,6 +39,7 @@ class NewPost(Resource):
 
 @post_api.route('/<int:post_id>')
 class PostById(Resource):
+    @post_api.expect(authorization)
     @login_required
     def put(self, post_id):
         post = Post.query.get(post_id)
@@ -64,6 +66,7 @@ class PostById(Resource):
             abort(404)
         return {'element':post.to_json()}
 
+    @post_api.expect(authorization)
     @login_required
     def delete(self, post_id):
         post = Post.query.get(post_id)

@@ -4,6 +4,7 @@ from functools import wraps
 from datetime import datetime, timedelta
 from flask import request, jsonify, g
 from config import SECRET_KEY
+from app.user.models import User
 
 
 # JWT AUTh process start
