@@ -5,6 +5,7 @@ from werkzeug.datastructures import MultiDict
 from app.tag.models import Tag
 from app.post.models import Post
 from app.post.forms import PostForm
+from app.post.serializers import post_model
 from app.user.auth import login_required
 from datetime import datetime
 from config import POSTS_PER_PAGE
@@ -14,9 +15,12 @@ post_api = api.namespace('posts', description='For sending and showing users pos
 
 @post_api.route('')
 class NewPost(Resource):
-    @post_api.expect(authorization)
+    @post_api.expect(authorization, post_model)
     @login_required
     def post(self):
+        """
+        Adds a new post
+        """
         data = request.get_json(force=True)
         tags = data.get('tags')
         if not tags:
@@ -34,14 +38,20 @@ class NewPost(Resource):
         return {"form_errors": form.errors}, 400
 
     def get(self):
+        """
+        Returns all post
+        """
         posts = Post.query.all()
         return {'elements': [element.to_json() for element in posts]}
 
 @post_api.route('/<int:post_id>')
 class PostById(Resource):
-    @post_api.expect(authorization)
+    @post_api.expect(authorization, post_model)
     @login_required
     def put(self, post_id):
+        """
+        Updates a post
+        """
         post = Post.query.get(post_id)
         if not post:
             abort(404)
@@ -61,6 +71,9 @@ class PostById(Resource):
         return {"form_errors": form.errors}, 400
 
     def get(self, post_id):
+        """
+        Returns a post by id
+        """
         post = Post.query.get(post_id)
         if not post:
             abort(404)
@@ -69,6 +82,9 @@ class PostById(Resource):
     @post_api.expect(authorization)
     @login_required
     def delete(self, post_id):
+        """
+        Deletes a post
+        """
         post = Post.query.get(post_id)
         if not post or post.user_id is not g.user.id:
             abort(404)
@@ -79,11 +95,17 @@ class PostById(Resource):
 @post_api.route('/helper','/helper/<int:page>')
 class HelperPost(Resource):
     def get(self, page=1):
+        """
+        Returns all helpers posts
+        """
         posts = Post.query.filter_by(refugee_post=False).order_by(Post.posted_at.desc()).paginate(page, POSTS_PER_PAGE, False).items
         return {'elements': [element.to_json() for element in posts]}
 
 @post_api.route('/refugee','/refugee/<int:page>')
 class RefugeePost(Resource):
     def get(self, page=1):
+        """
+        Returns all refugees posts
+        """
         posts = Post.query.filter_by(refugee_post=True).order_by(Post.posted_at.desc()).paginate(page, POSTS_PER_PAGE, False).items
         return {'elements': [element.to_json() for element in posts]}

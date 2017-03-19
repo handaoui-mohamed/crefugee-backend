@@ -22,8 +22,9 @@ api = Api(blueprint, version='1.0', title='Connected Refugees',
 )
 app.register_blueprint(blueprint)
 
+# authorization header for swagger documentation
 authorization = api.parser()
-authorization.add_argument('Authorization', help="Always append 'bacon ' before Token",\
+authorization.add_argument('Authorization', help="Always append 'bacon ' before Token",
                              type=str, location='headers', required=True)
 # extensions
 db = SQLAlchemy(app)
@@ -34,6 +35,7 @@ wtforms_json.init()
 io = SocketIO(app, async_mode=None)
 
 cors = CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
+
 # import APIs
 from app.user import views
 from app.tag import views

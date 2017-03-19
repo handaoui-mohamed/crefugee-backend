@@ -6,11 +6,8 @@ from app.user.decorators import admin_required
 from app.tag.models import Tag
 from app.tag.serializers import tag_model
 
-# add auth required and verify admin role
-
 tag_api = api.namespace('tags', description='For showing posts and users Tags')
 
-# new tag
 @tag_api.route('')
 class Tags(Resource):
     def get(self):
@@ -29,7 +26,7 @@ class Tags(Resource):
         name = data.get('name')
 
         if Tag.query.filter_by(name=name).first() is not None:
-            abort(400)
+            return {'message': "The tag\'s name already exists!"}, 400
 
         tag = Tag(name=name)
         db.session.add(tag)
@@ -70,8 +67,7 @@ class TagsById(Resource):
             db.session.add(tag)
             db.session.commit()
             return {'element': tag.to_json()}, 201
-        else:
-            return {'message': "The tag\'s name already exists!"}, 400
+        return {'message': "The tag\'s name already exists!"}, 400
 
     @tag_api.expect(authorization)
     @admin_required

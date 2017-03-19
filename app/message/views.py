@@ -1,10 +1,12 @@
 from app import db, api, io, authorization
+from sqlalchemy import or_, and_
 from flask_restplus import Resource
 from datetime import datetime
 from flask import abort, request, g
 from app.user.decorators import login_required
 from app.user.models import User
 from app.message.models import Message
+from app.message.serializers import message_model
 from config import NUM_PAGES
 from flask_socketio import emit, disconnect
 
@@ -13,14 +15,17 @@ messages_api = api.namespace('messages', description='For sending and showing me
 @messages_api.route('')
 class UserMessage(Resource):
     
-    @messages_api.expect(authorization)
+    @messages_api.expect(authorization, message_model)
     @login_required 
     def post(self):
-        data = request.get_json(force=True)
+        """
+        For sending a new message through HTTP
+        """
+        data = api.payload
         receiver_id = data.get("receiver_id")
         content = data.get("content")
-        if not receiver_id or not User.query.get(receiver_id) or not content:
-            abort(404)
+        if not User.query.get(receiver_id):
+            abort(400)
         message = Message(content=content,receiver_id=receiver_id,sender=g.user,sent_at=datetime.utcnow())
         db.session.add(message)
         db.session.commit()
@@ -31,18 +36,14 @@ class UserMessages(Resource):
     @messages_api.expect(authorization)
     @login_required
     def get(self, reciever_id, page=0):
-        # TODO: everything using one query!!!!!!!
-        sender_message = Message.query.filter_by(sender_id=g.user.id, receiver_id=reciever_id).all()
-        receiver_message = Message.query.filter_by(sender_id=reciever_id, receiver_id=g.user.id).all()
-        messages = sender_message + receiver_message
-        messages.sort(key=getKey, reverse=True)
-        messages = messages[page*NUM_PAGES: (page +1)*NUM_PAGES]
-        messages.sort(key=getKey, reverse=False)
-
+        """
+        Showing all messages bewteen two users by pages
+        """
+        messages = Message.query.filter_by(or_(and_(sender_id == g.user.id, receiver_id == reciever_id),
+                                           and_(sender_id == reciever_id, receiver_id == g.user.id)))\
+                                           .order_by("id desc").paginate(page, NUM_PAGES, False).items
+        messages.sort(key=lambda message:message.id, reverse=False)
         return {"elements": [element.to_json() for element in messages]}
-
-def getKey(message):
-    return message.sent_at
 
 # SocketIo for messages
 @io.on('connect', namespace='/message')
@@ -61,5 +62,6 @@ def handle_message(message):
 
 @io.on('my_event', namespace='/message')
 def test_message(message):
+    request.sid
     print('my_response',{'data': message['data']})
     emit('my_response', {'data': message['data']}, broadcast=True)
