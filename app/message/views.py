@@ -1,4 +1,4 @@
-from app import db, api
+from app import db, api, io
 from flask_restplus import Resource
 from datetime import datetime
 from flask import abort, request, g
@@ -40,5 +40,21 @@ class UserMessages(Resource):
 def getKey(message):
     return message.sent_at
 
+@io.on('connect', namespace='/message')
+def connect():
+    print request.sid
+    print("user connected to messages")
+    io.emit("my_response", "hellp")
 
+@io.on('disconnect', namespace='/message')
+def disconnect():
+    print('Client disconnected from messages')
 
+@io.on('message', namespace='/message')
+def handle_message(message):
+    print message["data"]
+    io.emit('my_response', {'data': message['data']})
+
+@io.on('my_event', namespace='/message')
+def test_message(message):
+    io.emit('my_response',{'data': message['data']})

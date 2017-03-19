@@ -11,3 +11,7 @@ flask-wtf
 Flask_Login
 Flask-restplus
 wtforms_json
+flask-socketio
+gevent
+gevent-websocket
+scrypt

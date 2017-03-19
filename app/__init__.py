@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_restplus import Api
 from config import basedir
 import wtforms_json
+from flask_socketio import SocketIO
 from flask_cors import CORS
 import sys  
 
@@ -33,6 +34,9 @@ app.register_blueprint(blueprint)
 db = SQLAlchemy(app)
 
 wtforms_json.init()
+
+#socketio
+io = SocketIO(app, async_mode=None)
 
 cors = CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
 # import APIs

@@ -97,8 +97,8 @@ def get_profile_image(username, filename):
 @app.route('/api/upload/legaldocument', methods=['POST'])
 @login_required
 def upload_legal_document():
-    if g.user.helper:
-        abort(501)
+    if not g.user.refugee:
+        abort(403)
     file = request.files.get("legal_document")
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
