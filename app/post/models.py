@@ -4,7 +4,7 @@ from app.tag.models import Tag
 PostTag = db.Table(
     'PostTag',
     db.Column('id', db.String, primary_key=True),
-    db.Column('post_id', db.Integer, db.ForeignKey('post.id')),
+    db.Column('post_id', db.String, db.ForeignKey('post.id')),
     db.Column('tag_id', db.Integer, db.ForeignKey('tag.id'))
 )
 
@@ -14,7 +14,7 @@ class Post(db.Model):
     content = db.Column(db.String)
     tags = db.relationship('Tag', secondary=PostTag, backref='post')
     image = db.relationship('PostUpload', uselist=False, backref='post')
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    user_id = db.Column(db.String, db.ForeignKey("user.id"))
     posted_at = db.Column(db.DateTime)
     refugee_post = db.Column(db.Boolean, default=False)
 
