@@ -1,9 +1,9 @@
 from app import db, api, authorization
 from flask_restplus import Resource
-from app.user.models import User
-from app.user.decorators import create_token, parse_token, login_required, admin_required
-from app.user.serializers import registration_model, user_login_model, profile_model, users_parser
-from app.user.forms import RegistrationForm, UpdateForm
+from models import User
+from decorators import create_token, parse_token, login_required, admin_required
+from serializers import registration_model, user_login_model, profile_model, users_parser
+from forms import RegistrationForm, UpdateForm
 from app.tag.models import Tag
 from flask import abort, g
 from config import YEAR, DAY

@@ -1,12 +1,11 @@
 from app import db, api, authorization
 from flask_restplus import Resource
-from flask import abort, request, g
-from werkzeug.datastructures import MultiDict
+from flask import abort, g
 from app.tag.models import Tag
-from app.post.models import Post
-from app.post.forms import PostForm
-from app.post.serializers import post_model
-from app.user.auth import login_required
+from models import Post
+from forms import PostForm
+from serializers import post_model
+from app.user.decorators import login_required
 from datetime import datetime
 from config import POSTS_PER_PAGE
 import uuid
@@ -21,11 +20,11 @@ class NewPost(Resource):
         """
         Adds a new post
         """
-        data = request.get_json(force=True)
+        data = api.payload
         tags = data.get('tags')
         if not tags:
             abort(400)
-        form = PostForm(MultiDict(mapping=data))
+        form = PostForm.from_json(data)
         if form.validate():
             title = data.get('title')
             content = data.get('content')
@@ -55,11 +54,11 @@ class PostById(Resource):
         post = Post.query.get(post_id)
         if not post:
             abort(404)
-        data = request.get_json(force=True)
+        data = api.payload
         tags = data.get('tags',post.tags)
         if not tags:
             abort(400)
-        form = PostForm(MultiDict(mapping=data))
+        form = PostForm.from_json(data)
         if form.validate():
             post.title = data.get('title')
             post.content = data.get('content')

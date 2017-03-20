@@ -3,8 +3,8 @@ from flask_restplus import Resource
 from flask import abort, g
 from app.user.models import User
 from app.user.decorators import admin_required
-from app.tag.models import Tag
-from app.tag.serializers import tag_model
+from models import Tag
+from serializers import tag_model
 
 tag_api = api.namespace('tags', description='For showing posts and users Tags')
 

@@ -1,7 +1,7 @@
 from app import api
 from flask_restplus import Resource
 from flask import request
-from app.contact.forms import ContactForm
+from forms import ContactForm
 from flask_restplus import fields
 
 mail_api = api.namespace("contact", "For contacting us by mail")

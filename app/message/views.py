@@ -5,8 +5,8 @@ from datetime import datetime
 from flask import abort, request, g
 from app.user.decorators import login_required
 from app.user.models import User
-from app.message.models import Message
-from app.message.serializers import message_model
+from models import Message
+from serializers import message_model
 from config import NUM_PAGES
 from flask_socketio import emit, disconnect
 
