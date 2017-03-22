@@ -3,7 +3,7 @@ from app.tag.models import Tag
 
 PostTag = db.Table(
     'PostTag',
-    db.Column('id', db.String, primary_key=True),
+    db.Column('id', db.Integer, primary_key=True),
     db.Column('post_id', db.String, db.ForeignKey('post.id')),
     db.Column('tag_id', db.Integer, db.ForeignKey('tag.id'))
 )
@@ -27,8 +27,8 @@ class Post(db.Model):
             "tags": [element.to_json() for element in self.tags],
             "image": self.image.to_json() if self.image else None,
             "user": User.query.get(self.user_id).to_json(),
-            "posted_at": self.posted_at,
-            "refugee_post": refugee_post
+            # "posted_at": self.posted_at,
+            "refugee_post": self.refugee_post
         }
 
     def add_tags(self, tags):
