@@ -27,7 +27,7 @@ class Post(db.Model):
             "tags": [element.to_json() for element in self.tags],
             "image": self.image.to_json() if self.image else None,
             "user": User.query.get(self.user_id).to_json(),
-            # "posted_at": self.posted_at,
+            "posted_at": str(self.posted_at),
             "refugee_post": self.refugee_post
         }
 

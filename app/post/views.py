@@ -13,7 +13,7 @@ import uuid
 post_api = api.namespace('posts', description='For sending and showing users posts')
 
 @post_api.route('')
-class NewPost(Resource):
+class Posts(Resource):
     @post_api.expect(authorization, post_model)
     @login_required
     def post(self):
@@ -43,7 +43,7 @@ class NewPost(Resource):
         posts = Post.query.all()
         return {'elements': [element.to_json() for element in posts]}
 
-@post_api.route('/<int:post_id>')
+@post_api.route('/<string:post_id>')
 class PostById(Resource):
     @post_api.expect(authorization, post_model)
     @login_required
