@@ -28,7 +28,7 @@ class UploadPost(Resource):
         """
         file = post_file.parse_args()['post_image']
         post = Post.query.get(post_id)
-        if g.user.id is not post.user_id:
+        if g.user.id is not post.user.id:
             abort(403)
         filename = uploadFile(file, os.path.join(basedir, UPLOAD_FOLDER, 'post', post_id), post)
         uploaded_image = PostUpload(name=filename,post=post,user=g.user)
