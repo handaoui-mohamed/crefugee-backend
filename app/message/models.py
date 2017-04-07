@@ -13,6 +13,6 @@ class Message(db.Model):
             "sender_id": self.sender_id,
             "receiver_id": self.receiver_id,
             "content": self.content,
-            "sent_at": self.sent_at
+            "sent_at": str(self.sent_at)
         }
 

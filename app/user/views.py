@@ -38,7 +38,8 @@ class Users(Resource):
         Returns all users.
         """
         username = users_parser.parse_args()['username']
-        if not username: abort(400)
+        if not username: 
+            return {'elements': [element.to_json() for element in User.query.all()]}
         user = User.query.filter_by(username=username).first()
         if not user: abort(404)
         return  {'element': user.to_json_post()}
