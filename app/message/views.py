@@ -39,11 +39,17 @@ class UserMessages(Resource):
         """
         Showing all messages bewteen two users by pages
         """
-        messages = Message.query.filter(or_(and_(Message.sender_id == g.user.id, Message.receiver_id == reciever_id),
-                                           and_(Message.sender_id == reciever_id, Message.receiver_id == g.user.id)))\
-                                           .order_by("id").paginate(page, NUM_PAGES, False).items
-        messages.sort(key=lambda message:message.id, reverse=False)
+        sender_message = Message.query.filter_by(sender_id=g.user.id, receiver_id=reciever_id).all()
+        receiver_message = Message.query.filter_by(sender_id=reciever_id, receiver_id=g.user.id).all()
+        messages = sender_message + receiver_message
+        messages.sort(key=getKey, reverse=True)
+        messages = messages[page*NUM_PAGES: (page +1)*NUM_PAGES]
+        messages.sort(key=getKey, reverse=False)
+
         return {"elements": [element.to_json() for element in messages]}
+    
+def getKey(message):
+    return message.sent_at
 
 # SocketIo for messages
 @io.on('connect', namespace='/message')
