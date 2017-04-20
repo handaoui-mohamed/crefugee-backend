@@ -5,10 +5,12 @@ WTF_CSRF_ENABLED = False
 SECRET_KEY = 'k@tj5C:!uj7B}vtJi2p7a0_vGu["x418E=_wU&WohA#>lRYWkX))q5T}h9M_!kskldjfkp'
 if os.environ.get('DATABASE_URL') is None:
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'db.sqlite')
-    HOST_URL = 'http://localhost:5000/api/'
+    HOST_URL = 'http://localhost:5000/api/v1'
+    ERROR_404_HELP=True
 else:
     SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
-    HOST_URL = 'https://hackit-ex.com/api/'
+    HOST_URL = 'https://crefugee-api.herokuapp.com/api/v1'
+    ERROR_404_HELP=False
 SQLALCHEMY_COMMIT_ON_TEARDOWN=True
 SQLALCHEMY_TRACK_MODIFICATIONS=True
 UPLOAD_FOLDER = 'uploads'
@@ -19,3 +21,5 @@ YEAR = 365
 DAY = 24
 NUM_PAGES = 10
 POSTS_PER_PAGE = 12
+
+#manage.py page 82
