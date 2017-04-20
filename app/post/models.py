@@ -17,9 +17,17 @@ class Post(db.Model):
     user_id = db.Column(db.String, db.ForeignKey("user.id"))
     posted_at = db.Column(db.DateTime)
     refugee_post = db.Column(db.Boolean, default=False)
+    ratings = db.relationship('Rating', backref='post', lazy='dynamic')
 
     def to_json(self):
         from app.user.models import User
+        post_rating = 0
+        len_ratings = len(self.ratings.all())
+        if  len_ratings > 0:
+            for rating in self.ratings.all():
+                post_rating += rating.value
+            post_rating = post_rating / len_ratings
+        
         return {
             "id": self.id,
             "title": self.title,
@@ -28,7 +36,8 @@ class Post(db.Model):
             "image": self.image.to_json() if self.image else None,
             "user": User.query.get(self.user_id).to_json(),
             "posted_at": str(self.posted_at),
-            "refugee_post": self.refugee_post
+            "refugee_post": self.refugee_post,
+            "rating": post_rating
         }
 
     def add_tags(self, tags):

@@ -44,6 +44,7 @@ from app.contact import views
 from app.moderator import views
 from app.post import views
 from app.message import views
+from app.rating import views
 
 # import models
 from app.role.models import Role
@@ -52,3 +53,4 @@ from app.tag.models import Tag
 from app.upload.models import PostUpload, ProfilePicture, LegalDocument
 from app.post.models import Post
 from app.message.models import Message
+from app.rating.models import Rating
