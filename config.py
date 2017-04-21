@@ -14,7 +14,7 @@ else:
 SQLALCHEMY_COMMIT_ON_TEARDOWN=True
 SQLALCHEMY_TRACK_MODIFICATIONS=True
 UPLOAD_FOLDER = 'uploads'
-ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif','PNG'])
 CORS_HEADERS = 'Content-Type'
 SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
 YEAR = 365
