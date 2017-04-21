@@ -30,7 +30,7 @@ class Users(Resource):
             db.session.add(user)
             db.session.commit()
             return {'element': user.to_json()}, 201
-        return {"form_errors": form.errors}, 400
+        return {"message": form.errors}, 400
 
     @users_api.expect(users_parser)
     def get(self):
@@ -124,4 +124,4 @@ class Profile(Resource):
             db.session.add(user)
             db.session.commit()
             return {'element':user.to_json()}, 201
-        return {"form_errors": form.errors}, 400
+        return {"message": form.errors}, 400

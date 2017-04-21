@@ -33,6 +33,7 @@ class User(db.Model):
     profile_image = db.relationship("ProfilePicture", uselist=False, backref="user")
     legal_document = db.relationship("LegalDocument", uselist=False, backref="user")
     sent_messages = db.relationship('Message', backref='sender', lazy='dynamic')
+    ratings = db.relationship('UserRating', backref='post', lazy='dynamic')
 
     def hash_password(self, password):
         self.password_hash = pwd_context.encrypt(password)
@@ -90,6 +91,7 @@ class User(db.Model):
         return {
             'id': self.id,
             'validated': self.validated,
+            'rating': self.get_rating(),
             'is_refugee': self.refugee,
             'username': self.username,
             'full_name': self.full_name,
@@ -106,6 +108,7 @@ class User(db.Model):
         return {
             'id': self.id,
             'validated': self.validated,
+            'rating': self.get_rating(),
             'is_refugee': self.refugee,
             'username': self.username,
             'full_name': self.full_name,
@@ -121,6 +124,7 @@ class User(db.Model):
         return {
             'id': self.id,
             'validated': self.validated,
+            'rating': self.get_rating(),
             'is_refugee': self.refugee,
             'username': self.username,
             'full_name': self.full_name,
@@ -143,6 +147,15 @@ class User(db.Model):
     def add_tag(self, tag):
         self.tags.append(tag)
         return self
+
+    def get_rating(self):
+        user_rating = 0
+        len_ratings = len(self.ratings.all())
+        if  len_ratings > 0:
+            for rating in self.ratings.all():
+                user_rating += rating.value
+            user_rating = user_rating / len_ratings
+        return user_rating
 
     def __repr__(self):
         return '<User N=%s username=%s location=(%s,%s)>' % (self.id, self.username)

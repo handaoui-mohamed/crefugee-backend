@@ -23,7 +23,7 @@ class Posts(Resource):
         data = api.payload
         tags = data.get('tags')
         if not tags:
-            abort(400, {"Tags": ["Les tags sont necessaire!"]})
+            abort(400, {"Tags": ["The Tags are necessary!"]})
         form = PostForm.from_json(data)
         if form.validate():
             title = data.get('title')
@@ -67,7 +67,7 @@ class PostById(Resource):
             db.session.add(post)
             db.session.commit()
             return {'element': post.to_json()}, 201
-        return {"form_errors": form.errors}, 400
+        return {"message": form.errors}, 400
 
     def get(self, post_id):
         """
