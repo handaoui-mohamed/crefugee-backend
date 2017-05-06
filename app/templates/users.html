@@ -11,7 +11,6 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>Id</th>
                     <th>Nom Utilisateur</th>
                     <th>Nom/Prénom</th>
                     <th>Email</th>
@@ -23,7 +22,6 @@
             <tbody>
                 {% for user in users %}
                 <tr>
-                    <td>{{ user.id }}</td>
                     <td>{{ user.username }}</td>
                     <td>{{ user.full_name }}</td>
                     <td>{{ user.email }}</td>

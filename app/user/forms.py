@@ -5,7 +5,6 @@ from wtforms.fields.html5 import EmailField
 from wtforms.validators import DataRequired, Length
 from app.user.models import User
 
-
 class RegistrationForm(FlaskForm):
     username = StringField('username',validators=[
         DataRequired('Le nom d\'utilisateur est nécessaire'),
@@ -63,6 +62,7 @@ class AdminLoginForm(FlaskForm):
             return False
         
         user = User.query.filter_by(username=self.username.data).first()
-        if not user or not user.verify_password(self.password.data) or not user.admin:
+        if not user or not user.verify_password(self.password.data) or not user.is_moderator:
             return False
         return True
+

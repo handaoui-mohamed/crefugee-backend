@@ -10,13 +10,13 @@ from config import SECRET_KEY
 UserTag = db.Table(
     'UserTag',
     db.Column('id', db.Integer, primary_key=True),
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('user_id', db.String, db.ForeignKey('user.id')),
     db.Column('tag_id', db.Integer, db.ForeignKey('tag.id'))
 )
 
 
 class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String, primary_key=True)
     username = db.Column(db.String(32), index=True, unique=True)
     password_hash = db.Column(db.String)
     full_name = db.Column(db.String(100))
@@ -25,8 +25,8 @@ class User(db.Model):
     phone_number = db.Column(db.String(20))
     description = db.Column(db.Text)
     validated = db.Column(db.Boolean, default=False)
-    admin = db.Column(db.Boolean, default=False)
-    helper = db.Column(db.Boolean, default=False)
+    refugee = db.Column(db.Boolean, default=False)
+    role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
     tags = db.relationship('Tag', secondary=UserTag, backref='user')
     posts = db.relationship('Post', backref='user', lazy='dynamic')
     files = db.relationship('PostUpload', backref='user', lazy='dynamic')
@@ -56,11 +56,41 @@ class User(db.Model):
         user = User.query.get(data['id'])
         return user
 
+    @property
+    def is_moderator(self):
+        if self.role.name == "Administrator" or self.role.name == "Moderator":
+            return True
+        return False
+
+    @property
+    def is_administrator(self):
+        if self.role.name == "Administrator":
+            return True
+        return False
+
+    @property
+    def is_authenticated(self):
+        return True
+
+    @property
+    def is_active(self):
+        return True
+
+    @property
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        try:
+            return unicode(self.id)  # python 2
+        except NameError:
+            return str(self.id)  # python 3
+
     def to_json(self):
         return {
             'id': self.id,
             'validated': self.validated,
-            'is_helper': self.helper,
+            'is_refugee': self.refugee,
             'username': self.username,
             'full_name': self.full_name,
             'address': self.address,
@@ -76,7 +106,7 @@ class User(db.Model):
         return {
             'id': self.id,
             'validated': self.validated,
-            'is_helper': self.helper,
+            'is_refugee': self.refugee,
             'username': self.username,
             'full_name': self.full_name,
             'address': self.address,
@@ -91,15 +121,16 @@ class User(db.Model):
         return {
             'id': self.id,
             'validated': self.validated,
-            'is_helper': self.helper,
+            'is_refugee': self.refugee,
             'username': self.username,
             'full_name': self.full_name,
             'address': self.address,
             'email': self.email,
             'phone_number': self.phone_number,
             'description': self.description,
-            'tags': [element.to_json() for element in self.tags.all()],
-            'posts': [element.to_json() for element in self.posts.all()],
+            'tags': [element.to_json() for element in self.tags],
+            'posts': [element.to_json() for element in self.posts],
+            'profile_image':  self.profile_image.to_json(self.username) if self.profile_image else None
         }
 
 

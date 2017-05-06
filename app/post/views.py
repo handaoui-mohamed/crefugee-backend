@@ -1,79 +1,110 @@
-from app import app, db
-from flask import abort, request, jsonify, g
-from werkzeug.datastructures import MultiDict
+from app import db, api, authorization
+from flask_restplus import Resource
+from flask import abort, g
 from app.tag.models import Tag
-from app.post.models import Post
-from app.post.forms import PostForm
-from app.user.views import login_required
+from models import Post
+from forms import PostForm
+from serializers import post_model
+from app.user.decorators import login_required
 from datetime import datetime
 from config import POSTS_PER_PAGE
+import uuid
 
-@app.route('/api/post', methods=['POST'])
-@login_required
-def new_post():
-    data = request.get_json(force=True)
-    tags = data.get('tags')
-    if not tags:
-        abort(400)
-    form = PostForm(MultiDict(mapping=data))
-    if form.validate():
-        title = data.get('title')
-        content = data.get('content')
-        helper_post = data.get('helper_post', False)
-        post = Post(title=title.lower(), content=content, user=g.user, posted_at=datetime.utcnow(), helper_post=helper_post)
-        post.add_tags(tags)
-        db.session.add(post)
+post_api = api.namespace('posts', description='For sending and showing users posts')
+
+@post_api.route('')
+class Posts(Resource):
+    @post_api.expect(authorization, post_model)
+    @login_required
+    def post(self):
+        """
+        Adds a new post
+        """
+        data = api.payload
+        tags = data.get('tags')
+        if not tags:
+            abort(400, {"Tags": ["Les tags sont necessaire!"]})
+        form = PostForm.from_json(data)
+        if form.validate():
+            title = data.get('title')
+            content = data.get('content')
+            post = Post(id=uuid.uuid4().hex,title=title.lower(), content=content, user=g.user,\
+                        posted_at=datetime.utcnow(), refugee_post=g.user.refugee)
+            post.add_tags(tags)
+            db.session.add(post)
+            db.session.commit()
+            return {'element': post.to_json()}, 201
+        return {"message": form.errors}, 400
+
+    def get(self):
+        """
+        Returns all post
+        """
+        posts = Post.query.all()
+        return {'elements': [element.to_json() for element in posts]}
+
+@post_api.route('/<string:post_id>')
+class PostById(Resource):
+    @post_api.expect(authorization, post_model)
+    @login_required
+    def put(self, post_id):
+        """
+        Updates a post
+        """
+        post = Post.query.get(post_id)
+        if not post:
+            abort(404)
+        data = api.payload
+        tags = data.get('tags',post.tags)
+        if not tags:
+            abort(400)
+        form = PostForm.from_json(data)
+        if form.validate():
+            post.title = data.get('title')
+            post.content = data.get('content')
+            post.add_tags(tags)
+            post.posted_at = datetime.utcnow()
+            db.session.add(post)
+            db.session.commit()
+            return {'element': post.to_json()}, 201
+        return {"form_errors": form.errors}, 400
+
+    def get(self, post_id):
+        """
+        Returns a post by id
+        """
+        post = Post.query.get(post_id)
+        if not post:
+            abort(404)
+        return {'element':post.to_json()}
+
+    @post_api.expect(authorization)
+    @login_required
+    def delete(self, post_id):
+        """
+        Deletes a post
+        """
+        post = Post.query.get(post_id)
+        if not post or post.user_id is not g.user.id:
+            abort(404)
+        db.session.delete(post)
         db.session.commit()
-        return jsonify({'element': post.to_json()})
-    return jsonify({"form_errors": form.errors}), 400
+        return '', 204
 
-@app.route('/api/post/<int:post_id>', methods=['PUT'])
-@login_required
-def modify_post(post_id):
-    post = Post.query.get(post_id)
-    if not post:
-        abort(404)
+@post_api.route('/helper','/helper/<int:page>')
+class HelperPost(Resource):
+    def get(self, page=1):
+        """
+        Returns all helpers posts
+        """
+        posts = Post.query.filter_by(refugee_post=False).order_by(Post.posted_at.desc()).paginate(page, POSTS_PER_PAGE, False).items
+        return {'elements': [element.to_json() for element in posts]}
 
-    data = request.get_json(force=True)
-    tags = data.get('tags',post.tags)
-    if not tags:
-        abort(400)
-    form = PostForm(MultiDict(mapping=data))
-    if form.validate():
-        post.title = data.get('title')
-        post.content = data.get('content')
-        post.add_tags(tags)
-        post.posted_at = datetime.utcnow()
-        db.session.add(post)
-        db.session.commit()
-        return jsonify({'element': post.to_json()})
-    return jsonify({"form_errors": form.errors}), 400
-
-@app.route('/api/post/<int:post_id>')
-def get_post(post_id):
-    post = Post.query.get(post_id)
-    if not post:
-        abort(404)
-    return jsonify({'element':post.to_json()})
-
-@app.route('/api/post/<int:post_id>', methods=["DELETE"])
-@login_required
-def delete_post(post_id):
-    post = Post.query.get(post_id)
-    if not post or post.user_id is not g.user.id:
-        abort(404)
-    db.session.delete(post)
-    db.session.commit()
-    return jsonify({'sucess':'true'})
-
-@app.route('/api/post/helper')
-@app.route('/api/post/helper/<int:page>')
-def get_helper_post(page=1):
-    posts = Post.query.filter_by(helper_post=True).order_by(Post.posted_at.desc()).paginate(page, POSTS_PER_PAGE, False).items
-    return jsonify({'elements': [element.to_json() for element in posts]})
-
-@app.route('/api/post/refugee')
-@app.route('/api/post/refugee/<int:page>')
-def get_refugee_post(page=1):
-    posts = Post.query.filter_by(helper_post=False).order_by(Post.posted_at.desc()).paginate(page, POSTS_PER_PAGE, False).items
-    return jsonify({'elements': [element.to_json() for element in posts]})
+@post_api.route('/refugee','/refugee/<int:page>')
+class RefugeePost(Resource):
+    def get(self, page=1):
+        """
+        Returns all refugees posts
+        """
+        posts = Post.query.filter_by(refugee_post=True).order_by(Post.posted_at.desc()).paginate(page, POSTS_PER_PAGE, False).items
+        return {'elements': [element.to_json() for element in posts]}
