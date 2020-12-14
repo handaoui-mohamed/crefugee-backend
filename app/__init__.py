@@ -53,4 +53,5 @@ from app.tag.models import Tag
 from app.upload.models import PostUpload, ProfilePicture, LegalDocument
 from app.post.models import Post
 from app.message.models import Message
-from app.rating.models import Rating
+from app.contact.models import Mail
+from app.rating.models import PostRating, UserRating

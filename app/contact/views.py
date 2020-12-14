@@ -1,7 +1,9 @@
-from app import api
+# -*- coding: utf-8 -*-
+from app import api, db
 from flask_restplus import Resource
 from flask import request
 from forms import ContactForm
+from models import Mail
 from flask_restplus import fields
 
 mail_api = api.namespace("contact", "For contacting us by mail")
@@ -14,7 +16,7 @@ mail_model = api.model('Mail', {
 })
 
 @mail_api.route('')
-class Mail(Resource):
+class Contacts(Resource):
     # TODO:for email support go to miguel book page 89
     @mail_api.expect(mail_model)
     def post(self):
@@ -28,5 +30,7 @@ class Mail(Resource):
             phone_number = data.get('phone_number')
             email = data.get('email')
             body = data.get('body')
-            return {"success": "Votre message a ete recu, merci"}, 201
-        return {"form_errors": form.errors}, 400
+            db.session.add(Mail(username=username,phone_number=phone_number,email=email,body=body))
+            db.session.commit
+            return {"success": "Your message was recieved, thank you"}, 201
+        return {"message": form.errors}, 400

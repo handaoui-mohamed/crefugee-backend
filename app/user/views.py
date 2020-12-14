@@ -30,7 +30,7 @@ class Users(Resource):
             db.session.add(user)
             db.session.commit()
             return {'element': user.to_json()}, 201
-        return {"form_errors": form.errors}, 400
+        return {"message": form.errors}, 400
 
     @users_api.expect(users_parser)
     def get(self):
@@ -71,7 +71,7 @@ class Login(Resource):
         Used to login a user, returns Token and User.
         """
         data = api.payload
-        username = data.get('username')
+        username = data.get('username').lower()
         password = data.get('password')
         remember_me = data.get('remember_me', False)
         duration = DAY if not remember_me else YEAR
@@ -124,4 +124,4 @@ class Profile(Resource):
             db.session.add(user)
             db.session.commit()
             return {'element':user.to_json()}, 201
-        return {"form_errors": form.errors}, 400
+        return {"message": form.errors}, 400

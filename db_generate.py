@@ -43,7 +43,7 @@ super_user.add_tags([1,2,3,4,5])
 moderator_user = User(id=uuid.uuid4().hex,username="mohamed",email="handaoui.mohamed@gmail.com",\
             phone_number="0656092713",description="Just a moderator",\
             password_hash="$5$rounds=535000$vogLSp3mAM4p/lAl$kVQleIyeJR5z0vNZgvRGWt4w1mGl4GVGQNFu62dyG93",
-            full_name="Handaoui Mohamed",validated=True,role=moderator_role)
+            full_name="Abdellaoui Ahmed",validated=True,role=moderator_role)
 
 db.session.add(super_user)
 db.session.add(moderator_user)

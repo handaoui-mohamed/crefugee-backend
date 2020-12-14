@@ -17,7 +17,7 @@ class Post(db.Model):
     user_id = db.Column(db.String, db.ForeignKey("user.id"))
     posted_at = db.Column(db.DateTime)
     refugee_post = db.Column(db.Boolean, default=False)
-    ratings = db.relationship('Rating', backref='post', lazy='dynamic')
+    ratings = db.relationship('PostRating', backref='post', lazy='dynamic')
 
     def to_json(self):
         from app.user.models import User
